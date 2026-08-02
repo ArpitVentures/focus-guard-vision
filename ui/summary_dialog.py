@@ -2,7 +2,7 @@
 FocusGuard AI - Session Summary Report Dialog with Recruiter Grades
 """
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame
+    QDialog, QVBoxLayout, QLabel, QPushButton, QFrame
 )
 from PyQt6.QtCore import Qt
 from ui.styles import DARK_THEME_QSS
