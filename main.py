@@ -1,67 +1,78 @@
 """
-FocusGuard AI - Main Entry Point (Day 1 Milestone)
+FocusGuard AI - Day 2 MediaPipe Face Mesh Pipeline Test
 """
 import cv2
 import time
 from vision.camera import CameraStream
+from tracking.face_mesh import FaceMeshDetector
 from utils.logger import logger
 
-
 def main():
-    logger.info("Starting FocusGuard AI - Live Engine Verification...")
+    logger.info("Initializing FocusGuard AI - Day 2 Face Mesh Pipeline...")
 
     try:
-        # Initialize and start threaded camera
         camera = CameraStream().start()
+        detector = FaceMeshDetector()
     except Exception as e:
-        logger.critical(f"Initialization failure: {e}")
+        logger.critical(f"Pipeline startup failed: {e}")
         return
 
     fps_counter = 0
     start_time = time.time()
     current_fps = 0
 
-    logger.info("Live feed started. Press 'q' or 'ESC' on the camera window to exit.")
+    logger.info("Face Mesh pipeline active. Press 'q' or 'ESC' on window to exit.")
 
     while True:
         success, frame = camera.read()
         if not success or frame is None:
             continue
 
-        # Real-time FPS Calculation
+        # Process MediaPipe Mesh
+        face_data, results = detector.process_frame(frame)
+
+        # Draw Mesh HUD Overlay
+        display_frame = detector.draw_mesh(frame, results, draw_tessellation=True, draw_contours=True)
+
+        # Calculate FPS
         fps_counter += 1
-        elapsed_time = time.time() - start_time
-        if elapsed_time >= 1.0:
-            current_fps = fps_counter / elapsed_time
+        elapsed = time.time() - start_time
+        if elapsed >= 1.0:
+            current_fps = fps_counter / elapsed
             fps_counter = 0
             start_time = time.time()
 
         # Render HUD Diagnostic Info
-        cv2.putText(
-            frame, f"FocusGuard AI - Day 1 Vision Pipeline", (30, 40),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 128), 2, cv2.LINE_AA
-        )
-        cv2.putText(
-            frame, f"FPS: {current_fps:.1f}", (30, 80),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 215, 255), 2, cv2.LINE_AA
-        )
-        cv2.putText(
-            frame, "Status: Hardware Capture Active", (30, 120),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA
-        )
+        status_color = (0, 255, 128) if face_data.face_detected else (0, 0, 255)
+        status_text = f"Status: {'FACE TRACKED' if face_data.face_detected else 'SEARCHING...'}"
 
-        cv2.imshow("FocusGuard AI - Studio Engine Test", frame)
+        cv2.putText(display_frame, f"FocusGuard AI - Mesh Engine", (30, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 128), 2, cv2.LINE_AA)
+        cv2.putText(display_frame, f"FPS: {current_fps:.1f}", (30, 75),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 215, 255), 2, cv2.LINE_AA)
+        cv2.putText(display_frame, status_text, (30, 110),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.65, status_color, 2, cv2.LINE_AA)
+
+        if face_data.face_detected:
+            cv2.putText(display_frame, f"Landmarks: {len(face_data.pixel_landmarks)} points", (30, 145),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
+
+            # Draw Face Bounding Box
+            x, y, w, h = face_data.bbox
+            cv2.rectangle(display_frame, (x, y), (x + w, y + h), (0, 255, 255), 1)
+
+        cv2.imshow("FocusGuard AI - Day 2 Mesh Test", display_frame)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q') or key == 27:  # 27 is ESC key
-            logger.info("User exit trigger received.")
+        if key == ord('q') or key == 27:
+            logger.info("User termination requested.")
             break
 
-    # Shutdown hardware cleanly
+    # Release resources cleanly
+    detector.release()
     camera.stop()
     cv2.destroyAllWindows()
-    logger.info("FocusGuard AI shut down safely.")
-
+    logger.info("FocusGuard AI closed cleanly.")
 
 if __name__ == "__main__":
     main()
