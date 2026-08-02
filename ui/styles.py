@@ -1,23 +1,16 @@
-"""
-FocusGuard AI - Cyberpunk Glassmorphism Stylesheet (QSS)
-"""
-
 DARK_THEME_QSS = """
-/* Base Window Background */
 QMainWindow, QDialog {
     background-color: #090D16;
     color: #F8FAFC;
     font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
 }
 
-/* Glassmorphism Card Panels */
 QFrame#CardPanel {
     background-color: #111827;
     border: 1px solid #1F2937;
     border-radius: 14px;
 }
 
-/* Header Titles */
 QLabel#HeaderTitle {
     font-size: 20px;
     font-weight: bold;
@@ -44,7 +37,6 @@ QLabel#SubMetricValue {
     color: #10B981;
 }
 
-/* Status Pill Badges */
 QLabel#BadgeFocused {
     background-color: rgba(16, 185, 129, 0.15);
     color: #34D399;
@@ -75,13 +67,12 @@ QLabel#BadgeDrowsy {
     font-weight: bold;
 }
 
-/* Action Buttons */
 QPushButton#PrimaryButton {
     background-color: #0284C7;
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
-    padding: 12px 24px;
+    padding: 12px 20px;
     font-size: 14px;
     font-weight: bold;
 }
@@ -95,7 +86,7 @@ QPushButton#PauseButton {
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
-    padding: 12px 24px;
+    padding: 12px 20px;
     font-size: 14px;
     font-weight: bold;
 }
@@ -109,7 +100,7 @@ QPushButton#StopButton {
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
-    padding: 12px 24px;
+    padding: 12px 20px;
     font-size: 14px;
     font-weight: bold;
 }
@@ -118,7 +109,11 @@ QPushButton#StopButton:hover {
     background-color: #BE123C;
 }
 
-/* Progress Bar Container */
+QPushButton:disabled {
+    background-color: #374151;
+    color: #94A3B8;
+}
+
 QProgressBar {
     border: 1px solid #1F2937;
     border-radius: 8px;
@@ -127,7 +122,7 @@ QProgressBar {
     color: #FFFFFF;
     font-size: 11px;
     font-weight: bold;
-    height: 18px;
+    height: 16px;
 }
 
 QProgressBar#ProgressBarGreen::chunk {

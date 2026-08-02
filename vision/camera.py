@@ -18,6 +18,7 @@ class CameraStream:
         self.src = src
         self.width = width
         self.height = height
+        self.thread = None
 
         self.cap = cv2.VideoCapture(self.src, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
@@ -35,8 +36,12 @@ class CameraStream:
 
     def start(self) -> "CameraStream":
         """Starts background thread for frame reading."""
-        thread = threading.Thread(target=self._update, name="CameraThread", daemon=True)
-        thread.start()
+        self.thread = threading.Thread(
+            target=self._update,
+            name="CameraThread",
+            daemon=True
+        )
+        self.thread.start()
         logger.info("Camera capture worker thread started.")
         return self
 
@@ -67,7 +72,9 @@ class CameraStream:
     def stop(self):
         """Signals thread termination and releases hardware resources."""
         self.stopped = True
-        time.sleep(0.1)
+        if self.thread is not None:
+            self.thread.join(timeout=1.0)
+
         if self.cap.isOpened():
             self.cap.release()
         logger.info("Camera resources released successfully.")

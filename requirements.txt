@@ -1,9 +1,9 @@
-# FocusGuard AI - Core Dependencies
 opencv-contrib-python==4.11.0.86
 mediapipe==0.10.21
 numpy==1.26.4
 
-PyQt6>=6.6.0
+PyQt6==6.9.1
+
 torch>=2.1.0
 pandas>=2.1.0
 matplotlib>=3.8.0

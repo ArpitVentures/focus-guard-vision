@@ -1,43 +1,33 @@
-"""
-FocusGuard AI - Minimalist In-Video HUD Renderer
-"""
 import cv2
 import numpy as np
 from core.datatypes import FocusTelemetry
 
 
 class HUDRenderer:
-    """
-    Renders clean, minimal in-video overlays with dark glass badges.
-    """
+
     def __init__(self):
-        self.COLOR_INFO = (0, 215, 255)            # Electric Amber
-        self.COLOR_TEXT_PRIMARY = (255, 255, 255)  # Pure White
-        self.COLOR_ALERT_RED = (0, 0, 255)         # Crimson
-        self.COLOR_ALERT_ORANGE = (0, 140, 255)     # Bright Orange
+        self.COLOR_INFO = (0, 215, 255)
+        self.COLOR_TEXT_PRIMARY = (255, 255, 255)
+        self.COLOR_ALERT_RED = (0, 0, 255)
+        self.COLOR_ALERT_ORANGE = (0, 140, 255)
 
     def render(
-        self,
-        frame: np.ndarray,
-        fps: float,
-        telemetry: FocusTelemetry,
-        face_detected: bool
+            self,
+            frame: np.ndarray,
+            fps: float,
+            telemetry: FocusTelemetry
     ) -> np.ndarray:
-        """Renders minimal HUD overlays with rounded dark glass FPS badge."""
-        display = frame.copy()
 
-        # 1. Dark Glass FPS Badge Overlay (Top Left)
-        fps_text = f"FPS: {fps:.1f}"
-        # Draw semi-transparent dark box behind FPS
-        overlay = display.copy()
+        overlay = frame.copy()
         cv2.rectangle(overlay, (15, 15), (145, 55), (10, 15, 26), -1)
-        cv2.addWeighted(overlay, 0.65, display, 0.35, 0, display)
-        cv2.rectangle(display, (15, 15), (145, 55), (30, 41, 59), 1)  # Subdued border
 
+        display = cv2.addWeighted(overlay, 0.65, frame, 0.35, 0)
+        cv2.rectangle(display, (15, 15), (145, 55), (30, 41, 59), 1)
+
+        fps_text = f"FPS: {fps:.1f}"
         cv2.putText(display, fps_text, (28, 42),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.55, self.COLOR_INFO, 2, cv2.LINE_AA)
 
-        # 2. Emergency Alert Banners (Top Center)
         if telemetry.attention_state == "DROWSY":
             cv2.rectangle(display, (260, 15), (1020, 75), self.COLOR_ALERT_RED, -1)
             cv2.putText(display, f"[!] DROWSINESS DETECTED: {telemetry.primary_reason}",

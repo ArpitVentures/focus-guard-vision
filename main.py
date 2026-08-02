@@ -1,6 +1,3 @@
-"""
-FocusGuard AI - Desktop Application Entry Point
-"""
 import sys
 from PyQt6.QtWidgets import QApplication
 
@@ -9,7 +6,7 @@ from utils.logger import logger
 
 
 def main():
-    logger.info("Launching FocusGuard AI Desktop Studio Application...")
+    logger.info("Launching FocusGuard Studio...")
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
