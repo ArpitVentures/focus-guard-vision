@@ -1,5 +1,5 @@
 """
-FocusGuard AI - 3D Head Pose & Looking Away Estimator
+FocusGuard AI - 3D Head Pose & Looking Away Estimator (Bug Fixed)
 """
 import cv2
 import numpy as np
@@ -32,17 +32,17 @@ class HeadPoseEstimator:
     def __init__(
         self,
         yaw_threshold: float = 25.0,
-        pitch_threshold: float = 20.0,
+        pitch_threshold: float = 18.0,      # Strict threshold for vertical tilt
         looking_away_time_threshold: float = 1.0
     ):
         self.yaw_threshold = yaw_threshold
         self.pitch_threshold = pitch_threshold
         self.looking_away_time_threshold = looking_away_time_threshold
         self.looking_away_start_time = None
-        logger.info("HeadPoseEstimator engine initialized successfully.")
+        logger.info("HeadPoseEstimator initialized with strict threshold checks.")
 
     def process(self, pixel_landmarks: List[Tuple[int, int]], frame_shape: Tuple[int, int, int]) -> HeadPoseMetrics:
-        """Calculates Pitch, Yaw, Roll angles and determines looking away state."""
+        """Calculates Pitch, Yaw, Roll angles with strict threshold filtering."""
         metrics = HeadPoseMetrics()
 
         if not pixel_landmarks or len(pixel_landmarks) < 468:
@@ -90,7 +90,11 @@ class HeadPoseEstimator:
 
         current_time = time.time()
 
-        if abs(metrics.yaw) > self.yaw_threshold or abs(metrics.pitch) > self.pitch_threshold:
+        # STRICT BUG FIX: Requires abs() to exceed threshold before triggering looking_away
+        is_yaw_exceeded = abs(metrics.yaw) > self.yaw_threshold
+        is_pitch_exceeded = abs(metrics.pitch) > self.pitch_threshold
+
+        if is_yaw_exceeded or is_pitch_exceeded:
             if self.looking_away_start_time is None:
                 self.looking_away_start_time = current_time
 

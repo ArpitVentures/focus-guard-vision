@@ -1,5 +1,5 @@
 """
-FocusGuard AI - Main Desktop Studio Dashboard Window (Refined UX)
+FocusGuard AI - Main Desktop Studio Dashboard Window (Final Production Version)
 """
 import time
 from PyQt6.QtWidgets import (
@@ -11,6 +11,8 @@ from PyQt6.QtCore import Qt, QTimer
 
 from ui.camera_worker import CameraWorker
 from ui.styles import DARK_THEME_QSS
+from ui.summary_dialog import SessionSummaryDialog
+from database.db_manager import DatabaseManager
 from core.datatypes import FocusTelemetry
 from config.settings import APP_NAME
 from utils.logger import logger
@@ -18,7 +20,7 @@ from utils.logger import logger
 
 class MainWindow(QMainWindow):
     """
-    Main Studio Dashboard featuring Center Crop scaling, Session Statistics, and Smart Controls.
+    Main Studio Dashboard featuring Center Crop scaling, SQLite Session Telemetry, and Smart Controls.
     """
     def __init__(self):
         super().__init__()
@@ -26,7 +28,7 @@ class MainWindow(QMainWindow):
         self.resize(1280, 840)
         self.setStyleSheet(DARK_THEME_QSS)
 
-        # Instance Attributes
+        # UI Attributes
         self.video_label: QLabel
         self.start_btn: QPushButton
         self.stop_btn: QPushButton
@@ -38,20 +40,23 @@ class MainWindow(QMainWindow):
         self.blink_label: QLabel
         self.ear_label: QLabel
         self.pose_label: QLabel
-
-        # Session Stats Labels
         self.session_time_label: QLabel
         self.alert_count_label: QLabel
 
+        # Database Manager
+        self.db = DatabaseManager()
+
         # Session Telemetry State
-        self.session_start_time = None
         self.elapsed_seconds = 0
         self.alert_count = 0
         self.is_tracking = False
         self.is_paused = False
         self.last_state = "FOCUSED"
 
-        # Session Timer (Updates HH:MM:SS)
+        # Focus Score Statistics
+        self.score_history = []
+
+        # Session Timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_session_timer)
 
@@ -60,7 +65,7 @@ class MainWindow(QMainWindow):
         self.worker.frame_processed.connect(self.update_ui)
 
         self.init_ui()
-        logger.info("MainWindow PyQt6 Studio UI initialized with Center Crop & Session Timer.")
+        logger.info("MainWindow PyQt6 Studio UI initialized with SQLite Integration.")
 
     def init_ui(self):
         central_widget = QWidget()
@@ -166,7 +171,7 @@ class MainWindow(QMainWindow):
         telemetry_layout.addWidget(self.pose_label)
         right_layout.addWidget(telemetry_card)
 
-        # 4. NEW: Session Analytics Summary Card (Fills Bottom Empty Space)
+        # 4. Session Analytics Summary Card
         session_card = QFrame()
         session_card.setObjectName("CardPanel")
         session_layout = QVBoxLayout(session_card)
@@ -197,10 +202,13 @@ class MainWindow(QMainWindow):
             self.start_btn.setStyle(self.start_btn.style())
             self.stop_btn.setEnabled(True)
 
-            self.session_start_time = time.time()
+            self.elapsed_seconds = 0
+            self.alert_count = 0
+            self.score_history.clear()
             self.timer.start(1000)
             self.worker.start()
-            logger.info("Session started.")
+            logger.info("New Session started.")
+
         elif self.is_paused:
             # Resume Session
             self.is_paused = False
@@ -210,6 +218,7 @@ class MainWindow(QMainWindow):
             self.timer.start(1000)
             self.worker.start()
             logger.info("Session resumed.")
+
         else:
             # Pause Session
             self.is_paused = True
@@ -222,18 +231,47 @@ class MainWindow(QMainWindow):
             logger.info("Session paused.")
 
     def end_session(self):
-        """Completely terminates active tracking session."""
+        """Terminates active session, saves metrics to SQLite DB, and opens report dialog."""
+        if not self.is_tracking:
+            return
+
+        self.timer.stop()
+        self.worker.stop()
+
+        # Compute Session Aggregates
+        avg_score = sum(self.score_history) / len(self.score_history) if self.score_history else 100.0
+        min_score = min(self.score_history) if self.score_history else 100.0
+        total_blinks = int(self.blink_label.text().split(":")[-1].strip()) if ":" in self.blink_label.text() else 0
+
+        # Save to SQLite Database
+        self.db.save_session(
+            duration_sec=self.elapsed_seconds,
+            avg_score=avg_score,
+            min_score=min_score,
+            total_blinks=total_blinks,
+            total_alerts=self.alert_count
+        )
+
+        # Show Performance Report Dialog
+        summary_dialog = SessionSummaryDialog(
+            duration_sec=self.elapsed_seconds,
+            avg_score=avg_score,
+            min_score=min_score,
+            blinks=total_blinks,
+            alerts=self.alert_count,
+            parent=self
+        )
+        summary_dialog.exec()
+
+        # Reset Controls
         self.is_tracking = False
         self.is_paused = False
         self.start_btn.setText("▶ Start Session")
         self.start_btn.setObjectName("PrimaryButton")
         self.start_btn.setStyle(self.start_btn.style())
         self.stop_btn.setEnabled(False)
-
-        self.timer.stop()
-        self.worker.stop()
-        self.video_label.setText("Session Ended.")
-        logger.info("Session ended.")
+        self.video_label.setText("Session Ended. Record saved to local database.")
+        logger.info("Session ended and saved.")
 
     def update_session_timer(self):
         """Updates HH:MM:SS timer readout every second."""
@@ -244,25 +282,24 @@ class MainWindow(QMainWindow):
         self.session_time_label.setText(f"Session Time: {hours:02d}:{minutes:02d}:{seconds:02d}")
 
     def update_ui(self, qt_image: QImage, telemetry: FocusTelemetry):
-        """Updates UI with Center Crop video scaling and telemetry cards."""
+        """Updates UI with Center Crop video scaling, telemetry, and score tracking."""
         pixmap = QPixmap.fromImage(qt_image)
 
-        # --- CENTER CROP SCALING LOGIC (Destroys Black Padding) ---
+        # Center Crop Scaling
         target_size = self.video_label.size()
         scaled_pixmap = pixmap.scaled(
             target_size,
             Qt.AspectRatioMode.KeepAspectRatioByExpanding,
             Qt.TransformationMode.SmoothTransformation
         )
-        # Crop excess width/height to fit exact label box
         x = (scaled_pixmap.width() - target_size.width()) // 2
         y = (scaled_pixmap.height() - target_size.height()) // 2
         cropped_pixmap = scaled_pixmap.copy(x, y, target_size.width(), target_size.height())
-
         self.video_label.setPixmap(cropped_pixmap)
 
-        # --- FOCUS SCORE & QUALITATIVE SUB-LABEL ---
+        # Focus Score & History
         score = telemetry.focus_score
+        self.score_history.append(score)
         self.score_label.setText(f"{score:.1f}%")
         self.score_bar.setValue(int(score))
 
@@ -284,7 +321,7 @@ class MainWindow(QMainWindow):
 
         self.score_bar.setStyle(self.score_bar.style())
 
-        # --- PILL BADGE & ALERT COUNTER ---
+        # Pill Status Badge & Alert Counter
         state = telemetry.attention_state
         if state != self.last_state and state in ["LOOKING_AWAY", "DROWSY"]:
             self.alert_count += 1
@@ -306,7 +343,7 @@ class MainWindow(QMainWindow):
 
         self.state_badge.setStyle(self.state_badge.style())
 
-        # --- TELEMETRY DETAILS ---
+        # Telemetry Labels
         self.reason_label.setText(f"💡 Reason: {telemetry.primary_reason}")
         self.blink_label.setText(f"👁️ Total Blinks: {telemetry.eye_metrics.blink_count}")
         self.ear_label.setText(f"😴 Average EAR: {telemetry.eye_metrics.avg_ear:.3f}")
