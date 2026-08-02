@@ -13,15 +13,12 @@ from config.settings import CAMERA_INDEX, FRAME_WIDTH, FRAME_HEIGHT
 class CameraStream:
     """
     Threaded Camera Controller to ensure low latency and high FPS capture.
-    Prevents webcam buffer lag by continuously grabbing frames in a worker thread.
     """
-
     def __init__(self, src: int = CAMERA_INDEX, width: int = FRAME_WIDTH, height: int = FRAME_HEIGHT):
         self.src = src
         self.width = width
         self.height = height
 
-        # CAP_DSHOW optimizes webcam initialization on Windows 11
         self.cap = cv2.VideoCapture(self.src, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
@@ -54,7 +51,11 @@ class CameraStream:
             with self.lock:
                 self.grabbed = grabbed
                 self.frame = frame
-            time.sleep(0.005)  # Yield CPU to prevent thread starvation
+            time.sleep(0.005)
+
+    def is_running(self) -> bool:
+        """Returns True if the camera stream is active and not stopped."""
+        return not self.stopped and self.cap.isOpened()
 
     def read(self) -> Tuple[bool, Optional[np.ndarray]]:
         """Returns the latest captured frame safely."""

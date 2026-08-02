@@ -1,7 +1,6 @@
 """
 FocusGuard AI - Centralized Settings and Configurations
 """
-import os
 from pathlib import Path
 
 # Base Directory Paths
