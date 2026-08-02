@@ -1,20 +1,20 @@
 """
-FocusGuard AI - Centralized Settings and Configurations
+FocusGuard AI - System Configuration Settings
 """
 from pathlib import Path
 
-# Base Directory Paths
+# Project Root Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
 
-# Camera Hardware Configs
+# Application Settings
+APP_NAME = "FocusGuard Studio"
+APP_VERSION = "1.0.0"
+
+# Camera Hardware Defaults
 CAMERA_INDEX = 0
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
-FPS_TARGET = 30
 
-# Product & UI Metadata
-APP_NAME = "FocusGuard AI - Distraction Tracker Studio"
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 800
+# Storage Directories
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)

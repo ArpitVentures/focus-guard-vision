@@ -11,7 +11,7 @@ class FocusEngine:
     """
     def __init__(self, damping_factor: float = 0.1):
         self.current_score = 100.0
-        self.damping_factor = damping_factor  # Controls smooth transition speed
+        self.damping_factor = damping_factor
         logger.info("FocusEngine initialized with Priority Ladder & Smooth Damping.")
 
     def compute(
@@ -20,14 +20,11 @@ class FocusEngine:
         eye_metrics: EyeMetrics,
         head_pose: HeadPoseMetrics
     ) -> FocusTelemetry:
-        """
-        Evaluates strict priority matrix: NO_FACE >> DROWSY >> LOOKING_AWAY >> FOCUSED
-        """
+        """Evaluates strict priority matrix: NO_FACE >> DROWSY >> LOOKING_AWAY >> FOCUSED"""
         telemetry = FocusTelemetry()
         telemetry.eye_metrics = eye_metrics
         telemetry.head_pose = head_pose
 
-        # --- Priority Matrix Resolution ---
         if not face_detected:
             telemetry.attention_state = "NO_FACE"
             telemetry.primary_reason = "No User Detected in Frame"
@@ -49,7 +46,7 @@ class FocusEngine:
             else:
                 direction = "Down"
 
-            telemetry.primary_reason = f"Head Turned {direction} ({abs(head_pose.yaw):.0f}°)"
+            telemetry.primary_reason = f"Head Turned {direction} ({abs(head_pose.yaw):.0f} deg)"
             target_score = max(20.0, 100.0 - (head_pose.looking_away_duration_sec * 15.0))
 
         else:
@@ -57,9 +54,8 @@ class FocusEngine:
             telemetry.primary_reason = "Target Focus Maintained"
             target_score = 100.0
 
-        # --- Smooth Score Interpolation (Prevents abrupt jumps) ---
+        # Smooth Score Damping
         self.current_score += (target_score - self.current_score) * self.damping_factor
-
         telemetry.target_score = round(target_score, 1)
         telemetry.focus_score = round(self.current_score, 1)
 
