@@ -1,0 +1,24 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Application Logs & DB
+logs/*.log
+*.sqlite
+*.db
+
+# Dynamic Media / Artifacts
+*.mp4
+*.avi
+*.png
