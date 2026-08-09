@@ -24,10 +24,8 @@ Built with **Python, PyQt6, OpenCV, MediaPipe, and SQLite**, the application fol
 
 ---
 
-# 🛠️ Tech Stack
-
 | Category | Technologies |
-|----------|--------------|
+|---|---|
 | Programming Language | Python 3 |
 | Desktop Framework | PyQt6 |
 | Computer Vision | OpenCV |
@@ -36,7 +34,6 @@ Built with **Python, PyQt6, OpenCV, MediaPipe, and SQLite**, the application fol
 | Database | SQLite |
 | Architecture | Modular Multi-threaded Desktop Application |
 | AI Logic | Explainable AI (XAI) Priority Engine |
-
 ---
 
 # 📂 Project Structure
@@ -64,19 +61,28 @@ focus-guard-vision/
 # 📸 Screenshots
 
 ### 🎯 Real-Time Distraction Detection
+
 FocusGuard detects significant head movement and provides an explainable distraction alert with the current head yaw angle and focus score.
 
 ![Distraction Detection](assets/screenshots/distraction-detection.png)
 
+---
+
 ### 😴 Drowsiness Detection
+
 The system detects prolonged eye closure and identifies potential drowsiness in real time using eye landmark analysis.
 
 ![Drowsiness Detection](assets/screenshots/drowsiness-detection.png)
 
+---
+
 ### 🚫 No User Detection
+
 FocusGuard automatically detects when the user leaves the camera frame and updates the focus score accordingly.
 
 ![No User Detection](assets/screenshots/no-user-detection.png)
+
+---
 
 # 🚀 Installation
 
