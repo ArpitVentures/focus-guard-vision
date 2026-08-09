@@ -63,9 +63,20 @@ focus-guard-vision/
 
 # 📸 Screenshots
 
-> Screenshots and demo GIF will be added in the next documentation update.
+### 🎯 Real-Time Distraction Detection
+FocusGuard detects significant head movement and provides an explainable distraction alert with the current head yaw angle and focus score.
 
----
+![Distraction Detection](assets/screenshots/distraction-detection.png)
+
+### 😴 Drowsiness Detection
+The system detects prolonged eye closure and identifies potential drowsiness in real time using eye landmark analysis.
+
+![Drowsiness Detection](assets/screenshots/drowsiness-detection.png)
+
+### 🚫 No User Detection
+FocusGuard automatically detects when the user leaves the camera frame and updates the focus score accordingly.
+
+![No User Detection](assets/screenshots/no-user-detection.png)
 
 # 🚀 Installation
 
