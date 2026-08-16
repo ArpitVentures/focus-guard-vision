@@ -1,9 +1,11 @@
+from core.vision_pipeline import VisionPipeline
+
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QImage
 import cv2
 import time
+
 from vision.camera import CameraStream
-from core.vision_pipeline import VisionPipeline
 from core.datatypes import FocusTelemetry
 from ui.hud_renderer import HUDRenderer
 from utils.logger import logger
