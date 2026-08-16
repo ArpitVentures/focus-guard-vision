@@ -349,9 +349,25 @@ The application displays:
 - ⏱️ Session duration
 - 📊 Post-session performance summary
 
-The project repository contains demonstration screenshots focused on the application interface and detection states.
+### 🎯 Real-Time Distraction Detection
 
-> Personal webcam footage is not required for understanding the application's architecture or functionality.
+FocusGuard detects significant head movement and provides an explainable distraction alert with the current head yaw angle and focus score.
+
+![Distraction Detection](assets/screenshots/distraction-detection.png)
+
+### 😴 Drowsiness Detection
+
+The system detects prolonged eye closure and identifies potential drowsiness in real time using eye landmark analysis.
+
+![Drowsiness Detection](assets/screenshots/drowsiness-detection.png)
+
+### 🚫 No User Detection
+
+FocusGuard automatically detects when the user leaves the camera frame and updates the focus score accordingly.
+
+![No User Detection](assets/screenshots/no-user-detection.png)
+
+> The screenshots demonstrate the application's interface and detection states.
 
 ---
 
